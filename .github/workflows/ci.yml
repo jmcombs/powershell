@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up environment variables
+        id: get-net-pwsh-versions
+        run: |
+          chmod +x ./scripts/get-net-pwsh-versions.sh
+          source ./scripts/get-net-pwsh-versions.sh
+          echo "NET_RUNTIME_LTS_VERSION=$NET_RUNTIME_LTS_VERSION" >> $GITHUB_ENV
+          echo "NET_RUNTIME_URL_arm=$NET_RUNTIME_URL_arm" >> $GITHUB_ENV
+          echo "NET_RUNTIME_URL_arm64=$NET_RUNTIME_URL_arm64" >> $GITHUB_ENV
+          echo "NET_RUNTIME_URL_x64=$NET_RUNTIME_URL_x64" >> $GITHUB_ENV
+          echo "PWSH_LTS_URL_arm32=$PWSH_LTS_URL_arm" >> $GITHUB_ENV
+          echo "PWSH_LTS_PACKAGE_NAME_arm32=$PWSH_LTS_PACKAGE_NAME_arm32" >> $GITHUB_ENV
+          echo "PWSH_LTS_URL_arm64=$PWSH_LTS_URL_arm64" >> $GITHUB_ENV
+          echo "PWSH_LTS_PACKAGE_NAME_arm64=$PWSH_LTS_PACKAGE_NAME_arm64" >> $GITHUB_ENV
+          echo "PWSH_LTS_URL_x64=$PWSH_LTS_URL_x64" >> $GITHUB_ENV
+          echo "PWSH_LTS_PACKAGE_NAME_x64=$PWSH_LTS_PACKAGE_NAME_x64" >> $GITHUB_ENV
+          echo "PWSH_LTS_VERSION=$PWSH_LTS_VERSION" >> $GITHUB_ENV
+          echo "PWSH_LTS_MAJOR_VERSION=$PWSH_LTS_MAJOR_VERSION" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/powershell:latest
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          build-args: |
+            NET_RUNTIME_LTS_VERSION=${{ env.NET_RUNTIME_LTS_VERSION }}
+            NET_RUNTIME_URL_arm=${{ env.NET_RUNTIME_URL_arm }}
+            NET_RUNTIME_URL_arm64=${{ env.NET_RUNTIME_URL_arm64 }}
+            NET_RUNTIME_URL_x64=${{ env.NET_RUNTIME_URL_x64 }}
+            PWSH_LTS_URL_arm32=${{ env.PWSH_LTS_URL_arm }}
+            PWSH_LTS_PACKAGE_NAME_arm32=${{ env.PWSH_LTS_PACKAGE_NAME_arm32 }}
+            PWSH_LTS_URL_arm64=${{ env.PWSH_LTS_URL_arm64 }}
+            PWSH_LTS_PACKAGE_NAME_arm64=${{ env.PWSH_LTS_PACKAGE_NAME_arm64 }}
+            PWSH_LTS_URL_x64=${{ env.PWSH_LTS_URL_x64 }}
+            PWSH_LTS_PACKAGE_NAME_x64=${{ env.PWSH_LTS_PACKAGE_NAME_x64 }}
+            PWSH_LTS_VERSION=${{ env.PWSH_LTS_VERSION }}
+            PWSH_LTS_MAJOR_VERSION=${{ env.PWSH_LTS_MAJOR_VERSION }}
