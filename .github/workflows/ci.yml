@@ -4,13 +4,29 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - README.md
   pull_request:
     branches:
       - main
+    paths-ignore:
+      - README.md
+  schedule:
+    - cron: "0 0 * * 0" # Every Sunday at midnight
+  # Allow manual triggering of the workflow
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Force run the workflow"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -19,20 +35,16 @@ jobs:
       - name: Set up environment variables
         id: get-net-pwsh-versions
         run: |
+          # Generate /tmp/env_vars
           chmod +x ./scripts/get-net-pwsh-versions.sh
           source ./scripts/get-net-pwsh-versions.sh
-          echo "NET_RUNTIME_LTS_VERSION=$NET_RUNTIME_LTS_VERSION" >> $GITHUB_ENV
-          echo "NET_RUNTIME_URL_arm=$NET_RUNTIME_URL_arm" >> $GITHUB_ENV
-          echo "NET_RUNTIME_URL_arm64=$NET_RUNTIME_URL_arm64" >> $GITHUB_ENV
-          echo "NET_RUNTIME_URL_x64=$NET_RUNTIME_URL_x64" >> $GITHUB_ENV
-          echo "PWSH_LTS_URL_arm32=$PWSH_LTS_URL_arm" >> $GITHUB_ENV
-          echo "PWSH_LTS_PACKAGE_NAME_arm32=$PWSH_LTS_PACKAGE_NAME_arm32" >> $GITHUB_ENV
-          echo "PWSH_LTS_URL_arm64=$PWSH_LTS_URL_arm64" >> $GITHUB_ENV
-          echo "PWSH_LTS_PACKAGE_NAME_arm64=$PWSH_LTS_PACKAGE_NAME_arm64" >> $GITHUB_ENV
-          echo "PWSH_LTS_URL_x64=$PWSH_LTS_URL_x64" >> $GITHUB_ENV
-          echo "PWSH_LTS_PACKAGE_NAME_x64=$PWSH_LTS_PACKAGE_NAME_x64" >> $GITHUB_ENV
-          echo "PWSH_LTS_VERSION=$PWSH_LTS_VERSION" >> $GITHUB_ENV
-          echo "PWSH_LTS_MAJOR_VERSION=$PWSH_LTS_MAJOR_VERSION" >> $GITHUB_ENV
+          # Set BUILD_ARGS as a multiline env var directly from /tmp/env_vars
+          echo "BUILD_ARGS<<EOF" >> $GITHUB_ENV
+          cat /tmp/env_vars >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          # Debug output to verify
+          echo "Build args prepared:"
+          cat /tmp/env_vars
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -46,23 +58,35 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ github.repository }}:latest
+
       - name: Build and push Docker image
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
+          sbom: true
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/powershell:latest
+          tags: ${{ steps.meta.outputs.tags }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7
-          build-args: |
-            NET_RUNTIME_LTS_VERSION=${{ env.NET_RUNTIME_LTS_VERSION }}
-            NET_RUNTIME_URL_arm=${{ env.NET_RUNTIME_URL_arm }}
-            NET_RUNTIME_URL_arm64=${{ env.NET_RUNTIME_URL_arm64 }}
-            NET_RUNTIME_URL_x64=${{ env.NET_RUNTIME_URL_x64 }}
-            PWSH_LTS_URL_arm32=${{ env.PWSH_LTS_URL_arm }}
-            PWSH_LTS_PACKAGE_NAME_arm32=${{ env.PWSH_LTS_PACKAGE_NAME_arm32 }}
-            PWSH_LTS_URL_arm64=${{ env.PWSH_LTS_URL_arm64 }}
-            PWSH_LTS_PACKAGE_NAME_arm64=${{ env.PWSH_LTS_PACKAGE_NAME_arm64 }}
-            PWSH_LTS_URL_x64=${{ env.PWSH_LTS_URL_x64 }}
-            PWSH_LTS_PACKAGE_NAME_x64=${{ env.PWSH_LTS_PACKAGE_NAME_x64 }}
-            PWSH_LTS_VERSION=${{ env.PWSH_LTS_VERSION }}
-            PWSH_LTS_MAJOR_VERSION=${{ env.PWSH_LTS_MAJOR_VERSION }}
+          build-args: ${{ env.BUILD_ARGS }}
+
+      - name: Update README.md with versions
+        run: |
+          # Extract versions from environment variables
+          NET_RUNTIME_LTS_VERSION=$(grep 'NET_RUNTIME_LTS_VERSION' /tmp/env_vars | cut -d '=' -f 2)
+          PWSH_LTS_VERSION=$(grep 'PWSH_LTS_VERSION' /tmp/env_vars | cut -d '=' -f 2)
+
+          # Update README.md with the extracted versions
+          sed -i "s/| .NET Core Runtime   | .*/| .NET Core Runtime   | $NET_RUNTIME_LTS_VERSION |/" README.md
+          sed -i "s/| PowerShell Core     | .*/| PowerShell Core     | $PWSH_LTS_VERSION |/" README.md
+
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update README.md with latest .NET Core Runtime and PowerShell Core versions"
+          branch: main
+          file_pattern: README.md
