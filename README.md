@@ -2,7 +2,7 @@
 
 LTS versions of PowerShell Core and .NET Core in Linux. Published for 64-bit `x86` and `ARM` architectures.
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/jmcombs/powershell/docker-publish.yml?logo=github)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/jmcombs/powershell/ci.yml?logo=github)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jmcombs/powershell)](https://hub.docker.com/r/jmcombs/powershell "Click to view the image on Docker Hub")
 [![Docker Stars](https://img.shields.io/docker/stars/jmcombs/powershell)](https://hub.docker.com/r/jmcombs/powershell "Click to view the image on Docker Hub")
 [![Github Issues](https://img.shields.io/github/issues/jmcombs/powershell)](https://github.com/jmcombs/powershell/issues "Click to view or open issues")

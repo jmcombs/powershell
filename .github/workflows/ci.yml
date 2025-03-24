@@ -62,7 +62,14 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ github.repository }}:latest
+          images: ${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+          labels: |
+            org.opencontainers.image.created=$GITHUB_RUN_DATE
+            org.opencontainers.image.authors=${{ env.AUTHOR }}
+            org.opencontainers.image.url=https://hub.docker.com/r/${{ github.repository }}
+            org.opencontainers.image.source=$GITHUB_SERVER_URL/${{ github.repository }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
