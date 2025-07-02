@@ -36,9 +36,19 @@ load '../test_helper'
     # Source the script to access its functions (now safe since main logic is protected)
     source scripts/get-net-pwsh-versions.sh
 
-    # Create a mock curl function
+    # Create a mock curl function that handles different argument patterns
     curl() {
-        local url="$1"
+        local args=("$@")
+        local url=""
+
+        # Parse curl arguments to find the URL
+        for arg in "${args[@]}"; do
+            if [[ "$arg" =~ ^https?:// ]]; then
+                url="$arg"
+                break
+            fi
+        done
+
         case "$url" in
             *"releases-index.json")
                 cat "$MOCK_DATA_DIR/dotnet_releases_index.json"
@@ -69,10 +79,19 @@ load '../test_helper'
     # Source the script to access its functions
     source scripts/get-net-pwsh-versions.sh
 
-    # Create a mock curl function
+    # Create a mock curl function that handles different argument patterns
     curl() {
         local args=("$@")
         local url=""
+        local has_redirect_flags=false
+
+        # Check for redirect-specific flags (-Ls -o /dev/null -w)
+        for arg in "${args[@]}"; do
+            if [[ "$arg" == "-Ls" || "$arg" == "-o" || "$arg" == "-w" ]]; then
+                has_redirect_flags=true
+                break
+            fi
+        done
 
         # Parse curl arguments to find the URL
         for arg in "${args[@]}"; do
@@ -84,8 +103,13 @@ load '../test_helper'
 
         case "$url" in
             *"aka.ms/powershell-release"*)
-                # Mock the redirect response
-                echo "https://github.com/PowerShell/PowerShell/releases/tag/v7.4.7"
+                if [[ "$has_redirect_flags" == "true" ]]; then
+                    # Mock the redirect response for -Ls -o /dev/null -w '%{url_effective}\n'
+                    echo "https://github.com/PowerShell/PowerShell/releases/tag/v7.4.7"
+                else
+                    # Regular curl call
+                    echo "https://github.com/PowerShell/PowerShell/releases/tag/v7.4.7"
+                fi
                 ;;
             *"api.github.com"*)
                 cat "$MOCK_DATA_DIR/powershell_release.json"

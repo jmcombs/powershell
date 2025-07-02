@@ -11,8 +11,8 @@ setup() {
     # Clean up any existing environment variables file
     rm -f /tmp/env_vars
     
-    # Set up mock data directory
-    export MOCK_DATA_DIR="$BATS_TEST_DIRNAME/mocks"
+    # Set up mock data directory (go up one level from unit/integration test dir to tests dir)
+    export MOCK_DATA_DIR="$(dirname "$BATS_TEST_DIRNAME")/mocks"
 }
 
 # Teardown function to be called at the end of each test
