@@ -35,9 +35,9 @@ jobs:
       - name: Set up environment variables
         id: get-net-pwsh-versions
         run: |
-          # Generate /tmp/env_vars
+          # Generate /tmp/env_vars by running the script directly
           chmod +x ./scripts/get-net-pwsh-versions.sh
-          source ./scripts/get-net-pwsh-versions.sh
+          ./scripts/get-net-pwsh-versions.sh
           # Set BUILD_ARGS as a multiline env var directly from /tmp/env_vars
           echo "BUILD_ARGS<<EOF" >> $GITHUB_ENV
           cat /tmp/env_vars >> $GITHUB_ENV
