@@ -87,11 +87,40 @@ jobs:
           NET_RUNTIME_LTS_VERSION=$(grep 'NET_RUNTIME_LTS_VERSION' /tmp/env_vars | cut -d '=' -f 2)
           PWSH_LTS_VERSION=$(grep 'PWSH_LTS_VERSION' /tmp/env_vars | cut -d '=' -f 2)
 
-          # Update README.md with the extracted versions
-          sed -i "s/| .NET Core Runtime   | .*/| .NET Core Runtime   | $NET_RUNTIME_LTS_VERSION |/" README.md
-          sed -i "s/| PowerShell Core     | .*/| PowerShell Core     | $PWSH_LTS_VERSION |/" README.md
+          # Set as environment variables for later steps
+          echo "NET_RUNTIME_LTS_VERSION=$NET_RUNTIME_LTS_VERSION" >> $GITHUB_ENV
+          echo "PWSH_LTS_VERSION=$PWSH_LTS_VERSION" >> $GITHUB_ENV
+
+          # Debug: Show current versions and what we're updating to
+          echo "Current .NET Core Runtime version in README:"
+          grep "| .NET Core Runtime |" README.md || echo "Pattern not found"
+          echo "Current PowerShell Core version in README:"
+          grep "| PowerShell Core" README.md || echo "Pattern not found"
+          echo "New .NET Core Runtime version: $NET_RUNTIME_LTS_VERSION"
+          echo "New PowerShell Core version: $PWSH_LTS_VERSION"
+
+          # Update README.md with the extracted versions (fixed spacing)
+          sed -i "s/| .NET Core Runtime | .*/| .NET Core Runtime | $NET_RUNTIME_LTS_VERSION  |/" README.md
+          sed -i "s/| PowerShell Core   | .*/| PowerShell Core   | $PWSH_LTS_VERSION   |/" README.md
+
+          # Verify the changes were made
+          echo "Updated README versions:"
+          grep -A 2 "| Component" README.md
+
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if git diff --quiet README.md; then
+            echo "No changes to README.md"
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected in README.md"
+            echo "changed=true" >> $GITHUB_OUTPUT
+            git diff README.md
+          fi
 
       - name: Commit and push changes
+        if: steps.verify-changed-files.outputs.changed == 'true'
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update README.md with latest .NET Core Runtime and PowerShell Core versions"
