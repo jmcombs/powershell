@@ -108,36 +108,23 @@ load '../test_helper'
 
 @test "script can be sourced without executing main logic" {
     # Test that we can source the script to access its functions
-    # without executing the main logic
-    
-    # Create a test script that sources the original but doesn't execute main functions
-    cat > "$TEST_TEMP_DIR/source_test.sh" << 'EOF'
-#!/bin/bash
+    # without executing the main logic (now that we've added protection)
 
-# Source the script
-source scripts/get-net-pwsh-versions.sh
+    # Source the script directly
+    source scripts/get-net-pwsh-versions.sh
 
-# Test that functions are available
-if declare -f write_env_file >/dev/null; then
-    echo "write_env_file function available"
-fi
-
-if declare -f net_lts_version >/dev/null; then
-    echo "net_lts_version function available"
-fi
-
-if declare -f pwsh_lts_version >/dev/null; then
-    echo "pwsh_lts_version function available"
-fi
-EOF
-
-    chmod +x "$TEST_TEMP_DIR/source_test.sh"
-    
-    run bash "$TEST_TEMP_DIR/source_test.sh"
+    # Test that functions are available
+    run declare -f write_env_file
     [ "$status" -eq 0 ]
-    [[ "$output" =~ "write_env_file function available" ]]
-    [[ "$output" =~ "net_lts_version function available" ]]
-    [[ "$output" =~ "pwsh_lts_version function available" ]]
+
+    run declare -f net_lts_version
+    [ "$status" -eq 0 ]
+
+    run declare -f pwsh_lts_version
+    [ "$status" -eq 0 ]
+
+    run declare -f main
+    [ "$status" -eq 0 ]
 }
 
 @test "script produces consistent output across multiple runs" {

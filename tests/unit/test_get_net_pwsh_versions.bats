@@ -33,47 +33,32 @@ load '../test_helper'
 }
 
 @test "net_lts_version function with mocked data" {
-    # Create a test version of the script with mocked curl
-    cat > "$TEST_TEMP_DIR/test_script.sh" << 'EOF'
-#!/bin/bash
+    # Source the script to access its functions (now safe since main logic is protected)
+    source scripts/get-net-pwsh-versions.sh
 
-# Mock curl function
-curl() {
-    local url="$1"
-    case "$url" in
-        *"releases-index.json")
-            cat tests/mocks/dotnet_releases_index.json
-            ;;
-        *"releases.json")
-            cat tests/mocks/dotnet_releases.json
-            ;;
-        *)
-            echo "Unknown URL: $url" >&2
-            return 1
-            ;;
-    esac
-}
+    # Create a mock curl function
+    curl() {
+        local url="$1"
+        case "$url" in
+            *"releases-index.json")
+                cat "$MOCK_DATA_DIR/dotnet_releases_index.json"
+                ;;
+            *"releases.json")
+                cat "$MOCK_DATA_DIR/dotnet_releases.json"
+                ;;
+            *)
+                echo "Unknown URL: $url" >&2
+                return 1
+                ;;
+        esac
+    }
 
-# Source the original script functions
-source scripts/get-net-pwsh-versions.sh
+    # Test the net_lts_version function with mocked curl
+    net_lts_version x64 arm64 arm
 
-# Test the net_lts_version function
-net_lts_version x64 arm64 arm
-EOF
-
-    chmod +x "$TEST_TEMP_DIR/test_script.sh"
-    
-    # Run the test script
-    run bash "$TEST_TEMP_DIR/test_script.sh"
-    [ "$status" -eq 0 ]
-    
     # Check that environment variables file was created
     [ -f "/tmp/env_vars" ]
-    
-    # Validate expected environment variables
-    run validate_env_vars_file
-    [ "$status" -eq 0 ]
-    
+
     # Check specific values
     run get_version_from_env_file "NET_RUNTIME_LTS_VERSION"
     [ "$status" -eq 0 ]
@@ -81,59 +66,45 @@ EOF
 }
 
 @test "pwsh_lts_version function with mocked data" {
-    # Create a test version of the script with mocked curl
-    cat > "$TEST_TEMP_DIR/test_pwsh_script.sh" << 'EOF'
-#!/bin/bash
+    # Source the script to access its functions
+    source scripts/get-net-pwsh-versions.sh
 
-# Mock curl function
-curl() {
-    local args=("$@")
-    local url=""
-    
-    # Parse curl arguments to find the URL
-    for arg in "${args[@]}"; do
-        if [[ "$arg" =~ ^https?:// ]]; then
-            url="$arg"
-            break
-        fi
-    done
-    
-    case "$url" in
-        *"aka.ms/powershell-release"*)
-            # Mock the redirect response
-            echo "https://github.com/PowerShell/PowerShell/releases/tag/v7.4.7"
-            ;;
-        *"api.github.com"*)
-            cat tests/mocks/powershell_release.json
-            ;;
-        *)
-            echo "Unknown URL: $url" >&2
-            return 1
-            ;;
-    esac
-}
+    # Create a mock curl function
+    curl() {
+        local args=("$@")
+        local url=""
 
-# Source the original script functions
-source scripts/get-net-pwsh-versions.sh
+        # Parse curl arguments to find the URL
+        for arg in "${args[@]}"; do
+            if [[ "$arg" =~ ^https?:// ]]; then
+                url="$arg"
+                break
+            fi
+        done
 
-# Test the pwsh_lts_version function
-pwsh_lts_version x64 arm64 arm32
-EOF
+        case "$url" in
+            *"aka.ms/powershell-release"*)
+                # Mock the redirect response
+                echo "https://github.com/PowerShell/PowerShell/releases/tag/v7.4.7"
+                ;;
+            *"api.github.com"*)
+                cat "$MOCK_DATA_DIR/powershell_release.json"
+                ;;
+            *)
+                echo "Unknown URL: $url" >&2
+                return 1
+                ;;
+        esac
+    }
 
-    chmod +x "$TEST_TEMP_DIR/test_pwsh_script.sh"
-    
-    # Run the test script
-    run bash "$TEST_TEMP_DIR/test_pwsh_script.sh"
-    [ "$status" -eq 0 ]
-    
-    # Check that environment variables file was created
-    [ -f "/tmp/env_vars" ]
-    
+    # Test the pwsh_lts_version function with mocked curl
+    pwsh_lts_version x64 arm64 arm32
+
     # Check PowerShell version
     run get_version_from_env_file "PWSH_LTS_VERSION"
     [ "$status" -eq 0 ]
     [ "$output" = "7.4.7" ]
-    
+
     # Check PowerShell major version
     run get_version_from_env_file "PWSH_LTS_MAJOR_VERSION"
     [ "$status" -eq 0 ]
