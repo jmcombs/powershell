@@ -38,10 +38,14 @@ RUN apt-get update \
     apt-transport-https \
     ca-certificates \
     curl \
+    fontconfig \
+    git \
     jq \
     locales \
     software-properties-common \
-    sudo
+    sudo \
+    unzip \
+    wget
 
 # Set US English and UTF-8 Locale
 RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
@@ -100,8 +104,35 @@ RUN curl -LO ${PS_PACKAGE_URL} \
     && rm ${PS_PACKAGE} \
     && echo /usr/bin/pwsh >> /etc/shells
 
+# Install Oh My Posh
+RUN curl -s https://ohmyposh.dev/install.sh | bash -s -- -d /usr/local/bin
+
+# Install Nerd Font (CaskaydiaCove) - minimal installation for container use
+RUN mkdir -p /usr/share/fonts/truetype/cascadia \
+    && wget -q https://github.com/ryanoasis/nerd-fonts/releases/latest/download/CascadiaCode.zip -O /tmp/CascadiaCode.zip \
+    && unzip -q /tmp/CascadiaCode.zip -d /tmp/cascadia \
+    && find /tmp/cascadia -name "*.ttf" -exec cp {} /usr/share/fonts/truetype/cascadia/ \; \
+    && fc-cache -fv \
+    && rm -rf /tmp/CascadiaCode.zip /tmp/cascadia
+
 # Switch to non-root user for remainder of build
 USER $USERNAME
+
+# Create PowerShell profile directory
+RUN mkdir -p /home/$USERNAME/.config/powershell
+
+# Copy PowerShell profile and Oh My Posh configuration
+COPY --chown=$USERNAME:$USERNAME config/Microsoft.PowerShell_profile.ps1 /home/$USERNAME/.config/powershell/
+COPY --chown=$USERNAME:$USERNAME config/ohmyposh-container.json /home/$USERNAME/.config/powershell/
+
+# Create a script to install PowerShell modules on first run
+RUN echo '#!/bin/bash' > /home/coder/install-modules.sh \
+    && echo 'echo "Installing PowerShell modules..."' >> /home/coder/install-modules.sh \
+    && echo 'pwsh -c "Install-Module -Name Terminal-Icons -Repository PSGallery -Force -Scope CurrentUser" 2>/dev/null || echo "Terminal-Icons installation skipped"' >> /home/coder/install-modules.sh \
+    && echo 'pwsh -c "Install-Module -Name PSReadLine -Repository PSGallery -Force -Scope CurrentUser -AllowPrerelease" 2>/dev/null || echo "PSReadLine installation skipped"' >> /home/coder/install-modules.sh \
+    && echo 'echo "Module installation completed"' >> /home/coder/install-modules.sh \
+    && chmod +x /home/coder/install-modules.sh \
+    && chown coder:coder /home/coder/install-modules.sh
 
 # Switching back to interactive after container build
 ENV DEBIAN_FRONTEND=dialog

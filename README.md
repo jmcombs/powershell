@@ -11,6 +11,18 @@ LTS versions of PowerShell Core and .NET Core in Linux. Published for 64-bit `x8
 
 This container is based on the the latest Long Term Support (LTS) [Ubuntu (Docker Official Image)](https://hub.docker.com/_/ubuntu) image along with the latest LTS releases of .NET Core Runtime and PowerShell Core.
 
+### ✨ Enhanced Prompt Features
+
+This container includes an enhanced PowerShell experience with:
+
+- **Oh My Posh** - Modern prompt themes with Git integration
+- **Terminal-Icons** - Colorized directory listings with file type icons
+- **PSReadLine** - Enhanced command-line editing with predictive text
+- **Nerd Fonts** - Special glyphs and icons for improved visual experience
+- **Custom key bindings** - Productivity shortcuts for common operations
+
+See [Enhanced Prompt Documentation](docs/ENHANCED_PROMPT.md) for detailed information.
+
 ## Versions
 
 This repository does automated weekly builds with the latest published LTS versions of .NET Core and PowerShell Core. Below are the current versions included in the latest build.
@@ -18,7 +30,7 @@ This repository does automated weekly builds with the latest published LTS versi
 | Component         | Version |
 | ----------------- | ------- |
 | .NET Core Runtime | 10.0.1  |
-| PowerShell Core   | 7.4.12   |
+| PowerShell Core   | 7.4.12  |
 
 ## How to Use
 
