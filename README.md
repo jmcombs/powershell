@@ -33,3 +33,26 @@ This repository does automated weekly builds with the latest published LTS versi
 ```shell
 docker run -it jmcombs/powershell
 ```
+
+## Development
+
+### **Testing**
+
+This repository uses [bats-core](https://github.com/bats-core/bats-core) for testing bash scripts. To run tests locally:
+
+```shell
+# Install bats-core (if not already installed)
+git clone https://github.com/bats-core/bats-core.git
+cd bats-core && sudo ./install.sh /usr/local
+
+# Run all tests
+bats tests/
+
+# Run specific test files
+bats tests/unit/test_get_net_pwsh_versions.bats
+bats tests/integration/test_script_integration.bats
+```
+
+### **Contributing**
+
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on contributing to this project.

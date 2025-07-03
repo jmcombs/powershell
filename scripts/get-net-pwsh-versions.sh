@@ -70,6 +70,13 @@ pwsh_lts_version() {
     write_env_file "PWSH_LTS_MAJOR_VERSION" "$lts_major_version"
 }
 
-# Fetch the latest LTS versions for .NET and PowerShell
-net_lts_version arm arm64 x64
-pwsh_lts_version arm32 arm64 x64
+# Main function to fetch the latest LTS versions for .NET and PowerShell
+main() {
+    net_lts_version arm arm64 x64
+    pwsh_lts_version arm32 arm64 x64
+}
+
+# Only run main function if script is executed directly (not sourced)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    main "$@"
+fi

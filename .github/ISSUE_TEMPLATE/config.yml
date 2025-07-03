@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/jmcombs/powershell/blob/main/README.md
+    about: Check the README for usage instructions and information
+  - name: 💬 Discussions
+    url: https://github.com/jmcombs/powershell/discussions
+    about: Ask questions and discuss ideas with the community
+  - name: 🐳 Docker Hub
+    url: https://hub.docker.com/r/jmcombs/powershell
+    about: View the container on Docker Hub for usage examples and information
