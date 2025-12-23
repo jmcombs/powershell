@@ -18,10 +18,19 @@ net_lts_version() {
 
     # Fetch the release metadata for .NET
     response=$(curl -s https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json)
-    # Extract the latest runtime version in active LTS support
-    latest_runtime=$(echo "$response" | jq -r '.["releases-index"][] | select(.["support-phase"] == "active" and .["release-type"] == "lts") | .["latest-runtime"]')
-    # Extract the URL for the releases.json file
-    releases_json=$(echo "$response" | jq -r '.["releases-index"][] | select(.["support-phase"] == "active" and .["release-type"] == "lts") | .["releases.json"]')
+        # The releases index can contain multiple LTS channels (e.g., 8.0 and 10.0)
+        # We first filter to entries with support-phase == "active" and release-type == "lts",
+        # then pick the newest channel using jq's max_by on the numeric parts of channel-version.
+        # Example: "10.0" > "8.0" because [10,0] > [8,0] after split(".") | map(tonumber).
+    latest_runtime=$(echo "$response" | jq -r '.["releases-index"]
+        | map(select(.["support-phase"] == "active" and .["release-type"] == "lts"))
+        | max_by(.["channel-version"] | split(".") | map(tonumber))
+        | .["latest-runtime"]')
+    # Extract the corresponding releases.json URL for that channel
+    releases_json=$(echo "$response" | jq -r '.["releases-index"]
+        | map(select(.["support-phase"] == "active" and .["release-type"] == "lts"))
+        | max_by(.["channel-version"] | split(".") | map(tonumber))
+        | .["releases.json"]')
 
     # Fetch the runtime files for the latest runtime version
     runtime_files=$(curl -s "$releases_json" | jq -r --arg latest_runtime "$latest_runtime" '.releases[] | select(.["release-version"] == $latest_runtime) | .runtime.files')
@@ -52,14 +61,13 @@ pwsh_lts_version() {
     gh_api_lts_url=$(echo $lts_url | sed 's|https://github.com|https://api.github.com/repos|g; s|tag/|tags/|')
     # Fetch the release metadata from the GitHub API
     gh_api_lts_response=$(curl -s "$gh_api_lts_url")
-    # Extract the LTS version number
     lts_version=$(echo "$gh_api_lts_response" | jq -r '.tag_name' | sed 's|^v||')
     # Extract the major version number
-    lts_major_version=$(echo "$lts_version" | cut -d 'v' -f 2 | cut -d '.' -f 1)
+    lts_major_version=$(echo "$lts_version" | cut -d '.' -f 1)
 
     # Loop through each architecture and fetch the corresponding PowerShell URL and package name
     for arch in "$@"; do
-        url=$(echo "$gh_api_lts_response" | jq -r --arg arch "powershell-$lts_version-linux-$arch.tar.gz" '.assets[] | select(.name | contains($arch)) | .browser_download_url')
+        url=$(echo "$gh_api_lts_response" | jq -r --arg fname "powershell-$lts_version-linux-$arch.tar.gz" '.assets[] | select(.name == $fname) | .browser_download_url')
         package_name=$(basename "$url")
         write_env_file "PWSH_LTS_URL_$arch" "$url"
         write_env_file "PWSH_LTS_PACKAGE_NAME_$arch" "$package_name"
