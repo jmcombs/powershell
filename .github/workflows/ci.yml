@@ -205,7 +205,9 @@ jobs:
           sbom: true
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          # Note: Removed linux/arm/v7 as PowerShell module installation crashes
+          # under QEMU emulation on 32-bit ARM (exit code 134 / SIGABRT)
+          platforms: linux/amd64,linux/arm64
           build-args: ${{ env.BUILD_ARGS }}
 
       - name: Update README with versions
