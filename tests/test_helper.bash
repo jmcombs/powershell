@@ -29,35 +29,6 @@ teardown() {
     cd "$ORIGINAL_PWD"
 }
 
-# Mock curl command for testing
-mock_curl() {
-    local url="$1"
-    local mock_file=""
-    
-    case "$url" in
-        *"releases-index.json")
-            mock_file="$MOCK_DATA_DIR/dotnet_releases_index.json"
-            ;;
-        *"releases.json")
-            mock_file="$MOCK_DATA_DIR/dotnet_releases.json"
-            ;;
-        *"api.github.com"*)
-            mock_file="$MOCK_DATA_DIR/powershell_release.json"
-            ;;
-        *"aka.ms/powershell-release"*)
-            echo "https://github.com/PowerShell/PowerShell/releases/tag/v7.4.7"
-            return 0
-            ;;
-    esac
-    
-    if [[ -f "$mock_file" ]]; then
-        cat "$mock_file"
-    else
-        echo "Mock data not found for URL: $url" >&2
-        return 1
-    fi
-}
-
 # Check if required tools are available
 check_required_tools() {
     local missing_tools=()
