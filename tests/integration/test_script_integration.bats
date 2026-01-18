@@ -5,11 +5,6 @@
 load '../test_helper'
 
 @test "script runs successfully with real network calls" {
-    # Skip this test if we're in a CI environment without network access
-    if [[ -n "$CI" && "$CI" == "true" ]]; then
-        skip "Skipping network-dependent test in CI environment"
-    fi
-    
     # Check if required tools are available
     run check_required_tools
     if [ "$status" -ne 0 ]; then
@@ -29,11 +24,6 @@ load '../test_helper'
 }
 
 @test "generated versions have correct format" {
-    # Skip this test if we're in a CI environment without network access
-    if [[ -n "$CI" && "$CI" == "true" ]]; then
-        skip "Skipping network-dependent test in CI environment"
-    fi
-    
     # Check if required tools are available
     run check_required_tools
     if [ "$status" -ne 0 ]; then
@@ -56,11 +46,6 @@ load '../test_helper'
 }
 
 @test "all required URLs are generated" {
-    # Skip this test if we're in a CI environment without network access
-    if [[ -n "$CI" && "$CI" == "true" ]]; then
-        skip "Skipping network-dependent test in CI environment"
-    fi
-    
     # Check if required tools are available
     run check_required_tools
     if [ "$status" -ne 0 ]; then
@@ -128,11 +113,6 @@ load '../test_helper'
 }
 
 @test "script produces consistent output across multiple runs" {
-    # Skip this test if we're in a CI environment without network access
-    if [[ -n "$CI" && "$CI" == "true" ]]; then
-        skip "Skipping network-dependent test in CI environment"
-    fi
-    
     # Check if required tools are available
     run check_required_tools
     if [ "$status" -ne 0 ]; then
@@ -158,11 +138,6 @@ load '../test_helper'
 }
 
 @test "environment variables can be used in Docker build context" {
-    # Skip this test if we're in a CI environment without network access
-    if [[ -n "$CI" && "$CI" == "true" ]]; then
-        skip "Skipping network-dependent test in CI environment"
-    fi
-    
     # Check if required tools are available
     run check_required_tools
     if [ "$status" -ne 0 ]; then
