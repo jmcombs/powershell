@@ -20,6 +20,11 @@ on:
         required: false
         default: false
         type: boolean
+      skip_build:
+        description: "Skip build and use local image (for local testing with act)"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   # ============================================
@@ -121,6 +126,7 @@ jobs:
     name: Integration Tests
     runs-on: ubuntu-latest
     needs: build-test-image
+    if: ${{ !inputs.skip_build }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -146,9 +152,49 @@ jobs:
           sudo ./install.sh /usr/local
 
       - name: Run integration tests
-        env:
-          CI: true
         run: bats tests/integration/
+
+  integration-tests-local:
+    name: Integration Tests (Local Image)
+    runs-on: ubuntu-latest
+    if: ${{ inputs.skip_build }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify Docker image exists
+        run: |
+          echo "Checking for locally-built Docker image..."
+          if docker images | grep -q "jmcombs/powershell.*latest"; then
+            echo "✅ Found jmcombs/powershell:latest"
+            docker images | grep powershell
+          else
+            echo "❌ Error: jmcombs/powershell:latest not found"
+            echo ""
+            echo "Please build the image first:"
+            echo "  ./scripts/build-local-arm64.sh"
+            exit 1
+          fi
+
+      - name: Install bats-core
+        run: |
+          git clone https://github.com/bats-core/bats-core.git /tmp/bats-core
+          cd /tmp/bats-core
+          sudo ./install.sh /usr/local
+
+      - name: Run integration tests
+        run: bats tests/integration/
+
+      - name: Test summary
+        if: always()
+        run: |
+          echo ""
+          echo "================================================"
+          echo "Integration Tests Complete"
+          echo "================================================"
+          echo ""
+          echo "Image tested: jmcombs/powershell:latest"
+          docker images | grep powershell || true
 
   # ============================================
   # Stage 4: Publish (only on main, after tests)
@@ -157,8 +203,14 @@ jobs:
   publish:
     name: Build and Publish
     runs-on: ubuntu-latest
-    needs: integration-tests
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: [integration-tests, integration-tests-local]
+    if: |
+      always() &&
+      github.ref == 'refs/heads/main' &&
+      github.event_name != 'pull_request' &&
+      !inputs.skip_build &&
+      (needs.integration-tests.result == 'success' || needs.integration-tests.result == 'skipped') &&
+      (needs.integration-tests-local.result == 'success' || needs.integration-tests-local.result == 'skipped')
     permissions:
       contents: write
     steps:

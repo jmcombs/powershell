@@ -27,10 +27,10 @@ ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/${PS_MAJOR_VERSION}
 
 # If exists, remove 'ubuntu' user
 RUN	if id "ubuntu" &>/dev/null; then \
-		echo "Deleting user 'ubuntu'" && userdel -f -r ubuntu || echo "Failed to delete ubuntu user"; \  
-	else \
-		echo "User 'ubuntu' does not exist"; \ 
-	fi;
+    echo "Deleting user 'ubuntu'" && userdel -f -r ubuntu || echo "Failed to delete ubuntu user"; \  
+    else \
+    echo "User 'ubuntu' does not exist"; \ 
+    fi;
 
 # Install sudo and other necessary packages
 RUN apt-get update \
@@ -107,10 +107,6 @@ RUN curl -LO ${PS_PACKAGE_URL} \
 # Install Oh My Posh
 RUN curl -s https://ohmyposh.dev/install.sh | bash -s -- -d /usr/local/bin
 
-# NOTE: Nerd Font installation removed - fonts must be installed on the HOST machine
-# where your terminal emulator runs, not inside the container.
-# See README.md for host font installation instructions.
-
 # Oh My Posh Environment Variables (runtime configuration)
 # ENABLE_OHMYPOSH: Set to 'false' or '0' to disable Oh My Posh prompt
 # OHMYPOSH_THEME: Theme name (e.g., 'atomic') or URL; empty uses embedded Blue PSL 10K
@@ -125,7 +121,7 @@ RUN mkdir -p /home/$USERNAME/.config/powershell
 
 # Copy PowerShell profile and Oh My Posh configuration
 COPY --chown=$USERNAME:$USERNAME config/Microsoft.PowerShell_profile.ps1 /home/$USERNAME/.config/powershell/
-COPY --chown=$USERNAME:$USERNAME config/ohmyposh-container.json /home/$USERNAME/.config/powershell/
+COPY --chown=$USERNAME:$USERNAME config/blue-psl-10k.omp.json /home/$USERNAME/.config/powershell/
 
 # Install PowerShell modules during build
 # Terminal-Icons: Provides file/folder icons in terminal listings
@@ -142,5 +138,5 @@ RUN pwsh -NoProfile -Command " \
 
 # Switching back to interactive after container build
 ENV DEBIAN_FRONTEND=dialog
-# Setting entrypoint to Powershell
-ENTRYPOINT ["pwsh"]
+# Setting entrypoint to Powershell with no banner
+ENTRYPOINT ["pwsh", "-NoLogo"]

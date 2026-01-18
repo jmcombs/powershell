@@ -37,7 +37,7 @@
         {
           "type": "os",
           "style": "diamond",
-          "leading_diamond": "╭─",
+          "leading_diamond": "\u256d\u2500\ue0b2",
           "foreground": "#000000",
           "background": "p:surface0",
           "template": " {{ if .WSL }}WSL at {{ end }}{{.Icon}} "
@@ -45,11 +45,11 @@
         {
           "type": "path",
           "style": "powerline",
-          "powerline_symbol": "",
+          "powerline_symbol": "\ue0b0",
           "foreground": "p:base",
           "background": "p:path_blue",
-          "template": "  {{ .Path }} ",
-          "properties": {
+          "template": " \uf07c {{ .Path }} ",
+          "options": {
             "home_icon": "~",
             "style": "agnoster_short",
             "max_depth": 2
@@ -58,7 +58,7 @@
         {
           "type": "git",
           "style": "powerline",
-          "powerline_symbol": "",
+          "powerline_symbol": "\ue0b0",
           "foreground": "p:base",
           "background": "p:green",
           "background_templates": [
@@ -67,9 +67,9 @@
             "{{ if gt .Ahead 0 }}p:sky{{ end }}",
             "{{ if gt .Behind 0 }}p:green{{ end }}"
           ],
-          "template": " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }}  {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }}  {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }}  {{ .StashCount }}{{ end }} ",
-          "properties": {
-            "branch_icon": " ",
+          "template": " {{ .UpstreamIcon }}{{ .HEAD }}{{if .BranchStatus }} {{ .BranchStatus }}{{ end }}{{ if .Working.Changed }} \uf044 {{ .Working.String }}{{ end }}{{ if and (.Working.Changed) (.Staging.Changed) }} |{{ end }}{{ if .Staging.Changed }} \uf046 {{ .Staging.String }}{{ end }}{{ if gt .StashCount 0 }} \ueb4b {{ .StashCount }}{{ end }} ",
+          "options": {
+            "branch_icon": "\uf126 ",
             "fetch_status": true,
             "fetch_upstream_icon": true
           }
@@ -84,11 +84,11 @@
           "type": "node",
           "style": "powerline",
           "invert_powerline": true,
-          "powerline_symbol": "",
+          "powerline_symbol": "\ue0b2",
           "foreground": "p:base",
           "background": "p:teal",
-          "template": " {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }}  ",
-          "properties": {
+          "template": " {{ if .PackageManagerIcon }}{{ .PackageManagerIcon }} {{ end }}{{ .Full }} \ue718 ",
+          "options": {
             "fetch_version": true
           }
         },
@@ -96,11 +96,23 @@
           "type": "go",
           "style": "powerline",
           "invert_powerline": true,
-          "powerline_symbol": "",
+          "powerline_symbol": "\ue0b2",
           "foreground": "p:base",
           "background": "p:sky",
-          "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }}  ",
-          "properties": {
+          "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} \ue627 ",
+          "options": {
+            "fetch_version": true
+          }
+        },
+        {
+          "type": "julia",
+          "style": "powerline",
+          "invert_powerline": true,
+          "powerline_symbol": "\ue0b2",
+          "foreground": "p:base",
+          "background": "p:sapphire",
+          "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} \ue624 ",
+          "options": {
             "fetch_version": true
           }
         },
@@ -108,45 +120,85 @@
           "type": "python",
           "style": "powerline",
           "invert_powerline": true,
-          "powerline_symbol": "",
+          "powerline_symbol": "\ue0b2",
           "foreground": "p:base",
           "background": "p:yellow",
-          "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }}  ",
-          "properties": {
+          "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} \ue235 ",
+          "options": {
             "display_mode": "files",
             "fetch_virtual_env": false
           }
         },
         {
-          "type": "dotnet",
+          "type": "ruby",
           "style": "powerline",
           "invert_powerline": true,
-          "powerline_symbol": "",
+          "powerline_symbol": "\ue0b2",
           "foreground": "p:base",
           "background": "p:mauve",
-          "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }}  ",
-          "properties": {
+          "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} \ue791 ",
+          "options": {
+            "display_mode": "files",
             "fetch_version": true
           }
+        },
+        {
+          "type": "azfunc",
+          "style": "powerline",
+          "invert_powerline": true,
+          "powerline_symbol": "\ue0b2",
+          "foreground": "p:base",
+          "background": "p:peach",
+          "template": " {{ if .Error }}{{ .Error }}{{ else }}{{ .Full }}{{ end }} \uf0e7",
+          "options": {
+            "display_mode": "files",
+            "fetch_version": false
+          }
+        },
+        {
+          "type": "aws",
+          "style": "powerline",
+          "invert_powerline": true,
+          "powerline_symbol": "\ue0b2",
+          "foreground": "p:base",
+          "background_templates": [
+            "{{if contains \"default\" .Profile}}p:yellow{{end}}",
+            "{{if contains \"jan\" .Profile}}p:mauve{{end}}"
+          ],
+          "template": " {{ .Profile }}{{ if .Region }}@{{ .Region }}{{ end }} \ue7ad ",
+          "options": {
+            "display_default": false
+          }
+        },
+        {
+          "type": "root",
+          "style": "powerline",
+          "invert_powerline": true,
+          "powerline_symbol": "\ue0b2",
+          "foreground": "p:base",
+          "background": "p:red",
+          "template": " \uf0ad "
         },
         {
           "type": "executiontime",
           "style": "powerline",
           "invert_powerline": true,
-          "powerline_symbol": "",
+          "powerline_symbol": "\ue0b2",
           "foreground": "p:base",
           "background": "p:yellow",
-          "template": " {{ .FormattedMs }}  "
+          "template": " {{ .FormattedMs }} \uf252 "
         },
         {
           "type": "status",
           "style": "diamond",
           "foreground": "#ffffff",
           "background": "p:green",
-          "background_templates": ["{{ if gt .Code 0 }}p:red{{ end }}"],
-          "template": " {{ if gt .Code 0 }}{{ reason .Code }}{{ else }}{{ end }} ",
-          "trailing_diamond": "",
-          "properties": {
+          "background_templates": [
+            "{{ if gt .Code 0 }}p:red{{ end }}"
+          ],
+          "template": " {{ if gt .Code 0 }}{{ reason .Code }}{{ else }}\uf42e{{ end }} ",
+          "trailing_diamond": "\ue0b0",
+          "options": {
             "always_enabled": true
           }
         },
@@ -154,7 +206,7 @@
           "type": "text",
           "style": "plain",
           "foreground": "p:surface0",
-          "template": "─╮"
+          "template": "\u2500\u256e"
         }
       ]
     },
@@ -167,7 +219,7 @@
           "type": "text",
           "style": "plain",
           "foreground": "p:surface0",
-          "template": "╰┄"
+          "template": "\u2570\u2504"
         }
       ]
     },
@@ -178,7 +230,7 @@
           "type": "text",
           "style": "plain",
           "foreground": "p:surface0",
-          "template": "┄╯"
+          "template": "\u2504\u256f"
         }
       ]
     }
@@ -186,4 +238,3 @@
   "console_title_template": "{{ .Shell }} in {{ .Folder }}",
   "final_space": true
 }
-
