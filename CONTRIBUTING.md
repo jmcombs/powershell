@@ -32,24 +32,27 @@ This project maintains LTS versions of PowerShell Core and .NET Core in Linux co
 ### Local Development
 
 1. **Clone the repository**:
+
    ```bash
    git clone https://github.com/jmcombs/powershell.git
    cd powershell
    ```
 
 2. **Install testing dependencies**:
+
    ```bash
    # Install bats-core for testing
    git clone https://github.com/bats-core/bats-core.git
    cd bats-core && sudo ./install.sh /usr/local
    cd .. && rm -rf bats-core
-   
+
    # Install shellcheck for script validation
    sudo apt-get install shellcheck  # Ubuntu/Debian
    brew install shellcheck          # macOS
    ```
 
 3. **Make scripts executable**:
+
    ```bash
    chmod +x scripts/*.sh
    ```
@@ -60,16 +63,12 @@ This project uses a comprehensive testing strategy with multiple test types:
 
 ### Test Structure
 
-```
+```text
 tests/
 ├── test_helper.bash          # Common test utilities and setup
-├── mocks/                    # Mock data for testing
-│   ├── dotnet_releases_index.json
-│   ├── dotnet_releases.json
-│   └── powershell_release.json
-├── unit/                     # Unit tests with mocked dependencies
+├── unit/                     # Offline unit tests (no network calls)
 │   └── test_get_net_pwsh_versions.bats
-└── integration/              # Integration tests with real network calls
+└── integration/              # Integration tests with live network calls
     └── test_script_integration.bats
 ```
 
@@ -90,17 +89,25 @@ bats tests/unit/test_get_net_pwsh_versions.bats
 bats -t tests/
 ```
 
+### Local Testing on Apple Silicon
+
+For developers using Apple Silicon (M-series) Macs:
+
+- **Automated build and test**: Run `./scripts/build-local-arm64.sh` to build the Docker image natively for ARM64 and automatically run all integration tests using `act`
+- **Why this is needed**: The main CI workflow builds for AMD64 (x86_64), which causes QEMU emulation issues on Apple Silicon. The build script uses a consolidated workflow with `skip_build=true` to test against locally-built ARM64 images
+- **Manual testing**: After building, run `act workflow_dispatch --pull=false --input skip_build=true -j integration-tests-local` to execute integration tests independently
+
 ### Test Categories
 
-1. **Unit Tests**: Test individual functions with mocked dependencies
+1. **Unit Tests**: Test individual helper functions and local behavior
    - Fast execution
    - No network dependencies
-   - Test edge cases and error conditions
+   - Validate script structure, env-file helpers, and version format logic
 
-2. **Integration Tests**: Test complete workflows with real API calls
+2. **Integration Tests**: Test complete workflows with live API calls and the built container image
    - Slower execution
-   - Require network access
-   - Test real-world scenarios
+   - Require network access and Docker
+   - Validate real-world .NET and PowerShell LTS discovery and build args
 
 3. **Script Validation**: Static analysis and syntax checking
    - Shellcheck for bash script quality
@@ -111,19 +118,19 @@ bats -t tests/
 
 When adding new functionality:
 
-1. **Write unit tests first** for new functions
-2. **Add integration tests** for end-to-end workflows
-3. **Update mock data** if API responses change
-4. **Test error conditions** and edge cases
+1. **Write unit tests first** for new helper functions and local behavior
+2. **Add integration tests** for end-to-end workflows that depend on external services
+3. **Test error conditions** and edge cases, especially around network failures and malformed responses
 
 Example test structure:
+
 ```bash
 @test "descriptive test name" {
     # Arrange: Set up test conditions
-    
+
     # Act: Execute the code being tested
     run your_function_or_command
-    
+
     # Assert: Verify the results
     [ "$status" -eq 0 ]
     [[ "$output" =~ "expected pattern" ]]
@@ -141,7 +148,7 @@ Example test structure:
 - Use meaningful function and variable names
 - Add comments for complex logic
 
-### Testing
+### Test Guidelines
 
 - Use descriptive test names that explain what is being tested
 - Group related tests in the same file
@@ -153,6 +160,7 @@ Example test structure:
 ### Branch Naming
 
 Use descriptive branch names with prefixes:
+
 - `feature/description` - New features
 - `fix/description` - Bug fixes
 - `test/description` - Test improvements
@@ -161,7 +169,8 @@ Use descriptive branch names with prefixes:
 ### Commit Messages
 
 Follow conventional commit format:
-```
+
+```text
 type(scope): description
 
 Longer explanation if needed
@@ -197,6 +206,7 @@ Types: `feat`, `fix`, `test`, `docs`, `ci`, `refactor`
 ### Bug Reports
 
 Use the bug report template and include:
+
 - Clear description of the issue
 - Steps to reproduce
 - Expected vs actual behavior
@@ -206,6 +216,7 @@ Use the bug report template and include:
 ### Feature Requests
 
 Use the feature request template and include:
+
 - Clear description of the proposed feature
 - Use case and motivation
 - Possible implementation approach
