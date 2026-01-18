@@ -18,10 +18,10 @@ net_lts_version() {
 
     # Fetch the release metadata for .NET
     response=$(curl -s https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json)
-        # The releases index can contain multiple LTS channels (e.g., 8.0 and 10.0)
-        # We first filter to entries with support-phase == "active" and release-type == "lts",
-        # then pick the newest channel using jq's max_by on the numeric parts of channel-version.
-        # Example: "10.0" > "8.0" because [10,0] > [8,0] after split(".") | map(tonumber).
+    # The releases index can contain multiple LTS channels (e.g., 8.0 and 10.0)
+    # We first filter to entries with support-phase == "active" and release-type == "lts",
+    # then pick the newest channel using jq's max_by on the numeric parts of channel-version.
+    # Example: "10.0" > "8.0" because [10,0] > [8,0] after split(".") | map(tonumber).
     latest_runtime=$(echo "$response" | jq -r '.["releases-index"]
         | map(select(.["support-phase"] == "active" and .["release-type"] == "lts"))
         | max_by(.["channel-version"] | split(".") | map(tonumber))
