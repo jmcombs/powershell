@@ -2,28 +2,34 @@
 
 LTS versions of PowerShell Core and .NET Core in Linux. Published for 64-bit `x86` and `ARM` architectures.
 
+<div align="center">
+
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/jmcombs/powershell/ci.yml?logo=github)
 [![Docker Pulls](https://img.shields.io/docker/pulls/jmcombs/powershell)](https://hub.docker.com/r/jmcombs/powershell "Click to view the image on Docker Hub")
 [![Docker Stars](https://img.shields.io/docker/stars/jmcombs/powershell)](https://hub.docker.com/r/jmcombs/powershell "Click to view the image on Docker Hub")
 [![Github Issues](https://img.shields.io/github/issues/jmcombs/powershell)](https://github.com/jmcombs/powershell/issues "Click to view or open issues")
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/jmcombs)](https://github.com/sponsors/jmcombs "Sponsor this project")
-![Oh My Posh Theme](https://img.shields.io/badge/Oh_My_Posh-Blue_PSL_10K-3465a4?logo=windowsterminal&logoColor=white)
+[![Oh My Posh](https://img.shields.io/badge/Prompt-Oh%20My%20Posh-1abc9c?logo=powershell)](https://ohmyposh.dev/ "Oh My Posh documentation")
+[![Blue PSL 10K Theme](https://img.shields.io/badge/Theme-Blue%20PSL%2010K-3465a4?logo=powershell)](https://github.com/JanDeDobbeleer/oh-my-posh/blob/main/themes/blue-psl-10k.omp.json "Blue PSL 10K theme")
+
+</div>
 
 ## About
 
 This container is based on the the latest Long Term Support (LTS) [Ubuntu (Docker Official Image)](https://hub.docker.com/_/ubuntu) image along with the latest LTS releases of .NET Core Runtime and PowerShell Core.
 
-### ✨ Enhanced Prompt Features
+### **Sponsorship**
+
+If this image is part of your daily workflow—whether as an individual developer or in your team's CI/CD pipelines—consider [sponsoring on GitHub](https://github.com/sponsors/jmcombs). Sponsorship helps fund ongoing maintenance, timely .NET and PowerShell LTS updates, and improvements to the prompt and testing infrastructure relied on in automated environments.
+
+### Enhanced Prompt Features
 
 This container includes an enhanced PowerShell experience with:
 
-- **Oh My Posh** with **Blue PSL 10K theme** - Beautiful two-line prompt with Git integration, execution time, and multi-language support
-- **Terminal-Icons** - Colorized directory listings with file type icons (pre-installed)
-- **PSReadLine** - Enhanced command-line editing with predictive IntelliSense (pre-installed)
+- <a href="https://ohmyposh.dev/" target="_blank" rel="noreferrer noopener"><strong>Oh My Posh</strong></a> with <a href="https://github.com/JanDeDobbeleer/oh-my-posh/blob/main/themes/blue-psl-10k.omp.json" target="_blank" rel="noreferrer noopener"><strong>Blue PSL 10K theme</strong></a> - Beautiful two-line prompt with Git integration, execution time, and multi-language support
+- <a href="https://github.com/devblackops/Terminal-Icons" target="_blank" rel="noreferrer noopener"><strong>Terminal-Icons</strong></a> - Colorized directory listings with file type icons (pre-installed)
+- <a href="https://learn.microsoft.com/powershell/module/psreadline/" target="_blank" rel="noreferrer noopener"><strong>PSReadLine</strong></a> - Enhanced command-line editing with predictive IntelliSense (pre-installed)
 - **Nerd Font support** - Icons and glyphs for improved visual experience (requires host font configuration)
-- **Offline-ready** - Embedded theme works without internet connectivity
-
-See [Enhanced Prompt Documentation](docs/ENHANCED_PROMPT.md) for detailed information.
 
 ## Versions
 
@@ -32,7 +38,7 @@ This repository does automated weekly builds with the latest published LTS versi
 | Component         | Version |
 | ----------------- | ------- |
 | .NET Core Runtime | 10.0.1  |
-| PowerShell Core   | 7.4.12   |
+| PowerShell Core   | 7.4.12  |
 
 ## How to Use
 
@@ -41,36 +47,8 @@ This repository does automated weekly builds with the latest published LTS versi
 - Container's non-root and default user is `coder`
 - Container's default shell is `pwsh`
 - Container's default working directory is `/home/coder`
-
-### **⚠️ Important: Host Font Configuration**
-
-The Oh My Posh prompt uses **Nerd Font glyphs** for icons and special characters. **Fonts must be installed on your HOST machine** (not inside the container) because terminal rendering happens on your local system.
-
-#### Installing a Nerd Font
-
-**Recommended Font**: MesloLGM Nerd Font (officially recommended by Oh My Posh)
-
-```shell
-# Using Oh My Posh font installer (if oh-my-posh is installed locally)
-oh-my-posh font install meslo
-
-# Or download manually from:
-# https://github.com/ryanoasis/nerd-fonts/releases
-```
-
-#### Configuring Your Terminal Emulator
-
-After installing the font, configure your terminal to use it:
-
-| Terminal | Setting Location |
-|----------|-----------------|
-| **Windows Terminal** | Settings → Profiles → Defaults → Appearance → Font face: `MesloLGM Nerd Font` |
-| **VS Code** | Settings → Terminal › Integrated: Font Family: `MesloLGM Nerd Font` |
-| **iTerm2** | Preferences → Profiles → Text → Font: `MesloLGM Nerd Font` |
-| **Ghostty** | Config file: `font-family = MesloLGM Nerd Font` |
-| **macOS Terminal** | Preferences → Profiles → Font → Change: `MesloLGM Nerd Font` |
-
-> **Note**: If you see broken/missing characters in the prompt, your terminal is not using a Nerd Font.
+- Host terminal must use a Nerd Font (for example, MesloLGM Nerd Font) for prompt icons; fonts are installed on the host, not inside the container.
+- Oh My Posh with Blue PSL 10K theme is enabled by default; see [Environment Variables](#environment-variables) for customization options.
 
 ### **Running Container**
 
@@ -83,10 +61,10 @@ docker run -it jmcombs/powershell
 
 Customize the Oh My Posh prompt behavior at runtime using environment variables:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `ENABLE_OHMYPOSH` | `true` | Set to `false` or `0` to disable Oh My Posh entirely |
-| `OHMYPOSH_THEME` | _(empty)_ | Theme name or URL; if empty, uses embedded Blue PSL 10K theme |
+| Variable          | Default   | Description                                                   |
+| ----------------- | --------- | ------------------------------------------------------------- |
+| `ENABLE_OHMYPOSH` | `true`    | Set to `false` or `0` to disable Oh My Posh entirely          |
+| `OHMYPOSH_THEME`  | _(empty)_ | Theme name or URL; if empty, uses embedded Blue PSL 10K theme |
 
 #### Examples
 
@@ -117,19 +95,32 @@ This ensures the container always starts with a working prompt, even without int
 
 ### **Testing**
 
-This repository uses [bats-core](https://github.com/bats-core/bats-core) for testing bash scripts. To run tests locally:
+This repository uses [bats-core](https://github.com/bats-core/bats-core) for both unit and integration tests.
+
+- **Unit tests (`tests/unit/`)** validate local behavior such as script structure, helper functions, environment file validation, and PowerShell profile logic. They do not require network access.
+- **Integration tests (`tests/integration/`)** run the version discovery script against the live Microsoft and GitHub endpoints and exercise the built Docker image with various environment variable configurations. These tests require network access and Docker.
+
+**Test Coverage:**
+
+- .NET and PowerShell LTS version discovery
+- Docker image build and runtime behavior
+- Oh My Posh environment variables (`ENABLE_OHMYPOSH`, `OHMYPOSH_THEME`)
+- Container info display control (`SHOW_CONTAINER_INFO`)
+- Theme loading (default, built-in, custom URL, fallback scenarios)
+- PowerShell profile initialization and module loading
+
+To run tests locally:
 
 ```shell
 # Install bats-core (if not already installed)
 git clone https://github.com/bats-core/bats-core.git
 cd bats-core && sudo ./install.sh /usr/local
 
-# Run all tests
-bats tests/
+# Run offline unit tests
+bats tests/unit/
 
-# Run specific test files
-bats tests/unit/test_get_net_pwsh_versions.bats
-bats tests/integration/test_script_integration.bats
+# Run live integration tests (requires network and Docker)
+bats tests/integration/
 ```
 
 ### **Contributing**
