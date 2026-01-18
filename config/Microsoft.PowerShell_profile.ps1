@@ -108,7 +108,6 @@ if (-not $Global:OhMyPoshWelcomeShown) {
     Write-Host "`n🚀 Enhanced PowerShell Container Ready!" -ForegroundColor Green
     Write-Host "   Type 'info' to see container details" -ForegroundColor Gray
     Write-Host "   Environment variables: ENABLE_OHMYPOSH, OHMYPOSH_THEME" -ForegroundColor Gray
-    Write-Host "   Run './install-modules.sh' to install Terminal-Icons and PSReadLine" -ForegroundColor Gray
 }
 
 # Reset error preference

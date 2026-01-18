@@ -127,14 +127,18 @@ RUN mkdir -p /home/$USERNAME/.config/powershell
 COPY --chown=$USERNAME:$USERNAME config/Microsoft.PowerShell_profile.ps1 /home/$USERNAME/.config/powershell/
 COPY --chown=$USERNAME:$USERNAME config/ohmyposh-container.json /home/$USERNAME/.config/powershell/
 
-# Create a script to install PowerShell modules on first run
-RUN echo '#!/bin/bash' > /home/coder/install-modules.sh \
-    && echo 'echo "Installing PowerShell modules..."' >> /home/coder/install-modules.sh \
-    && echo 'pwsh -c "Install-Module -Name Terminal-Icons -Repository PSGallery -Force -Scope CurrentUser" 2>/dev/null || echo "Terminal-Icons installation skipped"' >> /home/coder/install-modules.sh \
-    && echo 'pwsh -c "Install-Module -Name PSReadLine -Repository PSGallery -Force -Scope CurrentUser -AllowPrerelease" 2>/dev/null || echo "PSReadLine installation skipped"' >> /home/coder/install-modules.sh \
-    && echo 'echo "Module installation completed"' >> /home/coder/install-modules.sh \
-    && chmod +x /home/coder/install-modules.sh \
-    && chown coder:coder /home/coder/install-modules.sh
+# Install PowerShell modules during build
+# Terminal-Icons: Provides file/folder icons in terminal listings
+# PSReadLine: Enhanced command-line editing experience
+RUN pwsh -NoProfile -Command " \
+    Set-PSRepository -Name PSGallery -InstallationPolicy Trusted; \
+    Write-Host 'Installing Terminal-Icons module...'; \
+    Install-Module -Name Terminal-Icons -Repository PSGallery -Force -Scope CurrentUser -ErrorAction SilentlyContinue; \
+    Write-Host 'Installing PSReadLine module...'; \
+    Install-Module -Name PSReadLine -Repository PSGallery -Force -Scope CurrentUser -AllowPrerelease -ErrorAction SilentlyContinue; \
+    Write-Host 'Module installation completed'; \
+    Get-Module -ListAvailable -Name Terminal-Icons,PSReadLine | Select-Object Name,Version | Format-Table -AutoSize \
+    "
 
 # Switching back to interactive after container build
 ENV DEBIAN_FRONTEND=dialog

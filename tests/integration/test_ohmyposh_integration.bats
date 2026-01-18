@@ -22,14 +22,18 @@ load '../test_helper'
     [[ "$output" == *"True"* ]]
 }
 
-# Note: Terminal-Icons and PSReadLine modules are NOT installed during Docker build
-# They can be installed by running ./install-modules.sh inside the container
-# These tests verify the install script exists instead
+# PowerShell modules are installed during Docker build
 
-@test "module install script exists" {
-    run docker run --rm jmcombs/powershell:latest pwsh -NoProfile -c "Test-Path '/home/coder/install-modules.sh'"
+@test "Terminal-Icons module is available" {
+    run docker run --rm jmcombs/powershell:latest pwsh -NoProfile -c "Get-Module -ListAvailable -Name Terminal-Icons | Select-Object -ExpandProperty Name"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"True"* ]]
+    [[ "$output" == *"Terminal-Icons"* ]]
+}
+
+@test "PSReadLine module is available" {
+    run docker run --rm jmcombs/powershell:latest pwsh -NoProfile -c "Get-Module -ListAvailable -Name PSReadLine | Select-Object -ExpandProperty Name"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PSReadLine"* ]]
 }
 
 @test "container info function works when profile is loaded" {
