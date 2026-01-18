@@ -56,10 +56,10 @@ ARG USERNAME=coder
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-# Set up User and grant sudo privileges 
+# Set up User and grant sudo privileges
 # apt-get package: sudo
 RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID --shell /bin/zsh --create-home $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID --shell /bin/bash --create-home $USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 WORKDIR /home/$USERNAME
@@ -107,13 +107,15 @@ RUN curl -LO ${PS_PACKAGE_URL} \
 # Install Oh My Posh
 RUN curl -s https://ohmyposh.dev/install.sh | bash -s -- -d /usr/local/bin
 
-# Install Nerd Font (CaskaydiaCove) - minimal installation for container use
-RUN mkdir -p /usr/share/fonts/truetype/cascadia \
-    && wget -q https://github.com/ryanoasis/nerd-fonts/releases/latest/download/CascadiaCode.zip -O /tmp/CascadiaCode.zip \
-    && unzip -q /tmp/CascadiaCode.zip -d /tmp/cascadia \
-    && find /tmp/cascadia -name "*.ttf" -exec cp {} /usr/share/fonts/truetype/cascadia/ \; \
-    && fc-cache -fv \
-    && rm -rf /tmp/CascadiaCode.zip /tmp/cascadia
+# NOTE: Nerd Font installation removed - fonts must be installed on the HOST machine
+# where your terminal emulator runs, not inside the container.
+# See README.md for host font installation instructions.
+
+# Oh My Posh Environment Variables (runtime configuration)
+# ENABLE_OHMYPOSH: Set to 'false' or '0' to disable Oh My Posh prompt
+# OHMYPOSH_THEME: Theme name (e.g., 'atomic') or URL; empty uses embedded Blue PSL 10K
+ENV ENABLE_OHMYPOSH=true
+ENV OHMYPOSH_THEME=""
 
 # Switch to non-root user for remainder of build
 USER $USERNAME

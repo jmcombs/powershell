@@ -51,8 +51,17 @@ while IFS='=' read -r key value; do
     fi
 done < /tmp/env_vars
 
-# Add architecture-specific build arg
-BUILD_ARGS="$BUILD_ARGS --build-arg TARGETARCH=amd64"
+# Add architecture-specific build arg (detect current architecture)
+ARCH=$(uname -m)
+if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
+    BUILD_ARGS="$BUILD_ARGS --build-arg TARGETARCH=arm64"
+elif [ "$ARCH" = "x86_64" ]; then
+    BUILD_ARGS="$BUILD_ARGS --build-arg TARGETARCH=amd64"
+else
+    BUILD_ARGS="$BUILD_ARGS --build-arg TARGETARCH=amd64"
+fi
+
+print_status $YELLOW "Building for architecture: $ARCH (TARGETARCH: $(echo $BUILD_ARGS | grep -o 'TARGETARCH=[^ ]*' | cut -d= -f2))"
 
 # Build the container
 docker build $BUILD_ARGS -t jmcombs/powershell:ohmyposh-test . || {
