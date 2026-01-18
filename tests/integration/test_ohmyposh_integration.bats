@@ -54,13 +54,16 @@ load '../test_helper'
     [[ "$output" == *"Profile loaded successfully"* ]]
 }
 
-@test "Nerd Font files are installed" {
-    run docker run --rm jmcombs/powershell:latest ls /usr/share/fonts/truetype/cascadia/
+# Note: Nerd Font tests removed - fonts must be installed on HOST machine, not in container
+# The container relies on the host terminal's font configuration for proper glyph rendering
+
+@test "ENABLE_OHMYPOSH environment variable is set" {
+    run docker run --rm jmcombs/powershell:latest pwsh -c "\$env:ENABLE_OHMYPOSH"
     [ "$status" -eq 0 ]
-    [[ "$output" == *".ttf"* ]]
+    [[ "$output" == *"true"* ]]
 }
 
-@test "font cache is updated" {
-    run docker run --rm jmcombs/powershell:latest fc-list | grep -i cascadia
+@test "OHMYPOSH_THEME environment variable exists" {
+    run docker run --rm jmcombs/powershell:latest pwsh -c "Test-Path env:OHMYPOSH_THEME"
     [ "$status" -eq 0 ]
 }
