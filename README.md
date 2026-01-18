@@ -18,8 +18,8 @@ This container is based on the the latest Long Term Support (LTS) [Ubuntu (Docke
 This container includes an enhanced PowerShell experience with:
 
 - **Oh My Posh** with **Blue PSL 10K theme** - Beautiful two-line prompt with Git integration, execution time, and multi-language support
-- **Terminal-Icons** - Colorized directory listings with file type icons (optional, run `./install-modules.sh`)
-- **PSReadLine** - Enhanced command-line editing with predictive text (optional, run `./install-modules.sh`)
+- **Terminal-Icons** - Colorized directory listings with file type icons (pre-installed)
+- **PSReadLine** - Enhanced command-line editing with predictive IntelliSense (pre-installed)
 - **Nerd Font support** - Icons and glyphs for improved visual experience (requires host font configuration)
 - **Offline-ready** - Embedded theme works without internet connectivity
 

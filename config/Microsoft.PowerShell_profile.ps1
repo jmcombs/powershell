@@ -5,8 +5,20 @@
 if ($Global:OhMyPoshProfileLoaded) { return }
 $Global:OhMyPoshProfileLoaded = $true
 
-# Performance: Only load modules if they're available
+# Performance: Suppress errors during module loading
 $ErrorActionPreference = 'SilentlyContinue'
+
+# Import pre-installed modules (installed during Docker build)
+# Terminal-Icons: Provides file/folder icons in terminal listings
+# PSReadLine: Enhanced command-line editing experience with predictive IntelliSense
+Import-Module Terminal-Icons -ErrorAction SilentlyContinue
+Import-Module PSReadLine -ErrorAction SilentlyContinue
+
+# Configure PSReadLine for enhanced experience (if available)
+if (Get-Module PSReadLine) {
+    Set-PSReadLineOption -PredictionSource History -ErrorAction SilentlyContinue
+    Set-PSReadLineOption -PredictionViewStyle ListView -ErrorAction SilentlyContinue
+}
 
 # Oh My Posh initialization with environment variable support
 # Environment Variables:
@@ -14,69 +26,40 @@ $ErrorActionPreference = 'SilentlyContinue'
 #   OHMYPOSH_THEME  - Theme name (e.g., 'atomic') or URL to custom theme
 #                     If empty, uses embedded Blue PSL 10K theme
 
-# Check if Oh My Posh is disabled via environment variable
-if ($env:ENABLE_OHMYPOSH -eq 'false' -or $env:ENABLE_OHMYPOSH -eq '0') {
-    Write-Host "ℹ️  Oh My Posh disabled via ENABLE_OHMYPOSH environment variable" -ForegroundColor Cyan
-} else {
+# Initialize Oh My Posh (unless disabled)
+if ($env:ENABLE_OHMYPOSH -ne 'false' -and $env:ENABLE_OHMYPOSH -ne '0') {
     $ohmyposhPath = '/usr/local/bin/oh-my-posh'
     $embeddedTheme = '/home/coder/.config/powershell/ohmyposh-container.json'
 
     if (Test-Path $ohmyposhPath) {
-        $themeConfig = $null
-        $themeName = 'Blue PSL 10K (embedded)'
-        $isFallback = $false
+        $themeConfig = $embeddedTheme
 
         # Determine theme configuration based on OHMYPOSH_THEME environment variable
         if ($env:OHMYPOSH_THEME) {
             if ($env:OHMYPOSH_THEME -match '^https?://') {
                 # Full URL provided - use as-is
                 $themeConfig = $env:OHMYPOSH_THEME
-                $themeName = 'Custom URL theme'
             } else {
                 # Theme name provided - construct URL to Oh My Posh built-in themes
                 $themeConfig = "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/$($env:OHMYPOSH_THEME).omp.json"
-                $themeName = "$($env:OHMYPOSH_THEME) (built-in)"
             }
-        } else {
-            # Default: Use embedded Blue PSL 10K theme (works offline)
-            $themeConfig = $embeddedTheme
         }
 
         # Try to initialize Oh My Posh with selected theme
-        $initSuccess = $false
         try {
             $initScript = & $ohmyposhPath init pwsh --config $themeConfig 2>&1
             if ($initScript -and $LASTEXITCODE -eq 0) {
                 Invoke-Expression $initScript
-                $initSuccess = $true
-                Write-Host "✅ Oh My Posh loaded: $themeName" -ForegroundColor Green
-            } else {
-                throw "Init script failed or empty"
-            }
-        } catch {
-            # Fallback to embedded Blue PSL 10K theme if custom theme failed
-            if ($themeConfig -ne $embeddedTheme -and (Test-Path $embeddedTheme)) {
-                Write-Host "⚠️  Theme '$themeName' failed, falling back to Blue PSL 10K..." -ForegroundColor Yellow
-                try {
-                    $initScript = & $ohmyposhPath init pwsh --config $embeddedTheme 2>&1
-                    if ($initScript -and $LASTEXITCODE -eq 0) {
-                        Invoke-Expression $initScript
-                        $initSuccess = $true
-                        $isFallback = $true
-                        Write-Host "✅ Oh My Posh loaded: Blue PSL 10K (fallback)" -ForegroundColor Green
-                    }
-                } catch {
-                    # Fallback failed too
+            } elseif ($themeConfig -ne $embeddedTheme -and (Test-Path $embeddedTheme)) {
+                # Fallback to embedded theme if custom theme failed
+                $initScript = & $ohmyposhPath init pwsh --config $embeddedTheme 2>&1
+                if ($initScript -and $LASTEXITCODE -eq 0) {
+                    Invoke-Expression $initScript
                 }
             }
-
-            if (-not $initSuccess) {
-                Write-Host "⚠️  Oh My Posh initialization failed: $($_.Exception.Message)" -ForegroundColor Yellow
-                Write-Host "   Using basic PowerShell prompt" -ForegroundColor Gray
-            }
+        } catch {
+            # Silent failure - Oh My Posh initialization failed, continue with basic prompt
         }
-    } else {
-        Write-Host "⚠️  Oh My Posh not found at $ohmyposhPath, using basic prompt" -ForegroundColor Yellow
     }
 }
 
@@ -101,14 +84,6 @@ function Show-ContainerInfo {
 
 # Alias for container info
 Set-Alias -Name info -Value Show-ContainerInfo
-
-# Welcome message (only show once)
-if (-not $Global:OhMyPoshWelcomeShown) {
-    $Global:OhMyPoshWelcomeShown = $true
-    Write-Host "`n🚀 Enhanced PowerShell Container Ready!" -ForegroundColor Green
-    Write-Host "   Type 'info' to see container details" -ForegroundColor Gray
-    Write-Host "   Environment variables: ENABLE_OHMYPOSH, OHMYPOSH_THEME" -ForegroundColor Gray
-}
 
 # Reset error preference
 $ErrorActionPreference = 'Continue'
