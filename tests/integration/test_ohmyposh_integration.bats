@@ -18,7 +18,7 @@ load '../test_helper'
 }
 
 @test "Oh My Posh theme configuration exists" {
-    run docker run --rm jmcombs/powershell:latest -NoProfile -c "Test-Path '/home/coder/.config/powershell/ohmyposh-container.json'"
+    run docker run --rm jmcombs/powershell:latest -NoProfile -c "Test-Path '/home/coder/.config/powershell/blue-psl-10k.omp.json'"
     [ "$status" -eq 0 ]
     [[ "$output" == *"True"* ]]
 }

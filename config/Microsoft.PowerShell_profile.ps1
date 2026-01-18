@@ -29,7 +29,7 @@ if (Get-Module PSReadLine) {
 # Initialize Oh My Posh (unless disabled)
 if ($env:ENABLE_OHMYPOSH -ne 'false' -and $env:ENABLE_OHMYPOSH -ne '0') {
     $ohmyposhPath = '/usr/local/bin/oh-my-posh'
-    $embeddedTheme = '/home/coder/.config/powershell/ohmyposh-container.json'
+    $embeddedTheme = '/home/coder/.config/powershell/blue-psl-10k.omp.json'
 
     if (Test-Path $ohmyposhPath) {
         $themeConfig = $embeddedTheme
@@ -84,6 +84,11 @@ function Show-ContainerInfo {
 
 # Alias for container info
 Set-Alias -Name info -Value Show-ContainerInfo
+
+# Automatically show container info for interactive sessions (can be disabled via SHOW_CONTAINER_INFO env var)
+if ($Host.Name -eq 'ConsoleHost' -and $env:SHOW_CONTAINER_INFO -ne 'false' -and $env:SHOW_CONTAINER_INFO -ne '0') {
+    Show-ContainerInfo
+}
 
 # Reset error preference
 $ErrorActionPreference = 'Continue'
