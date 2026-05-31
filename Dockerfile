@@ -44,8 +44,8 @@ RUN apt-get update \
 RUN sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8
 
 # Defining non-root User
 ARG USERNAME=coder
