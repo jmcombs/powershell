@@ -25,13 +25,6 @@ ENV PS_VERSION=${PWSH_LTS_VERSION}
 ENV PS_MAJOR_VERSION=${PWSH_LTS_MAJOR_VERSION}
 ENV PS_INSTALL_FOLDER=/opt/microsoft/powershell/${PS_MAJOR_VERSION}
 
-# If exists, remove 'ubuntu' user
-RUN	if id "ubuntu" &>/dev/null; then \
-    echo "Deleting user 'ubuntu'" && userdel -f -r ubuntu || echo "Failed to delete ubuntu user"; \  
-    else \
-    echo "User 'ubuntu' does not exist"; \ 
-    fi;
-
 # Install sudo and other necessary packages
 RUN apt-get update \
     && apt-get -y install --no-install-recommends \
@@ -48,8 +41,11 @@ RUN apt-get update \
     wget
 
 # Set US English and UTF-8 Locale
-RUN localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
-ENV LANG=en_US.utf8
+RUN sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 
 # Defining non-root User
 ARG USERNAME=coder
