@@ -44,8 +44,7 @@ RUN apt-get update \
 RUN sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8
-ENV LANG=en_US.UTF-8 \
-    LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8
 
 # Defining non-root User
 ARG USERNAME=coder
@@ -72,10 +71,10 @@ RUN existing_group="$(getent group "$USER_GID" | cut -d: -f1 || true)" \
     else \
         useradd --uid "$USER_UID" --gid "$USER_GID" --shell /bin/bash --create-home "$USERNAME"; \
     fi \
-    && mkdir -p /home/$USERNAME \
-    && chown $USER_UID:$USER_GID /home/$USERNAME \
-    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
+    && mkdir -p "/home/$USERNAME" \
+    && chown "$USER_UID":"$USER_GID" "/home/$USERNAME" \
+    && echo "$USERNAME ALL=\(root\) NOPASSWD:ALL" > "/etc/sudoers.d/$USERNAME" \
+    && chmod 0440 "/etc/sudoers.d/$USERNAME"
 WORKDIR /home/$USERNAME
 
 # Clean up
