@@ -54,8 +54,26 @@ ARG USER_GID=$USER_UID
 
 # Set up User and grant sudo privileges
 # apt-get package: sudo
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID --shell /bin/bash --create-home $USERNAME \
+RUN existing_group="$(getent group "$USER_GID" | cut -d: -f1 || true)" \
+    && if [ -n "$existing_group" ]; then \
+        [ "$existing_group" = "$USERNAME" ] || groupmod --new-name "$USERNAME" "$existing_group"; \
+    else \
+        groupadd --gid "$USER_GID" "$USERNAME"; \
+    fi \
+    && existing_user="$(getent passwd "$USER_UID" | cut -d: -f1 || true)" \
+    && if [ -n "$existing_user" ]; then \
+        if [ "$existing_user" = "$USERNAME" ]; then \
+            usermod --gid "$USER_GID" --shell /bin/bash --home "/home/$USERNAME" "$USERNAME"; \
+        else \
+            usermod --login "$USERNAME" --home "/home/$USERNAME" --move-home --gid "$USER_GID" --shell /bin/bash "$existing_user"; \
+        fi; \
+    elif id "$USERNAME" &>/dev/null; then \
+        usermod --uid "$USER_UID" --gid "$USER_GID" --shell /bin/bash --home "/home/$USERNAME" "$USERNAME"; \
+    else \
+        useradd --uid "$USER_UID" --gid "$USER_GID" --shell /bin/bash --create-home "$USERNAME"; \
+    fi \
+    && mkdir -p /home/$USERNAME \
+    && chown $USER_UID:$USER_GID /home/$USERNAME \
     && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 WORKDIR /home/$USERNAME
