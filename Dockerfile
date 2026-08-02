@@ -48,6 +48,7 @@ RUN apt-get update \
     wget
 
 # Set US English and UTF-8 Locale (Ubuntu 24.04+/26.04 compatible)
+# Uses the recommended modern Ubuntu pattern (locale-gen + update-locale)
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8
