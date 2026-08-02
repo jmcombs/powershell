@@ -33,6 +33,7 @@ RUN	if id "ubuntu" &>/dev/null; then \
     fi;
 
 # Install sudo and other necessary packages
+# libicu* is required by .NET/PowerShell for globalization (FailFast without it)
 RUN apt-get update \
     && apt-get -y install --no-install-recommends \
     apt-transport-https \
@@ -41,6 +42,7 @@ RUN apt-get update \
     fontconfig \
     git \
     jq \
+    libicu* \
     locales \
     software-properties-common \
     sudo \
