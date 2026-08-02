@@ -40,11 +40,13 @@ RUN apt-get update \
     unzip \
     wget
 
-# Set US English and UTF-8 Locale
+# Set US English and UTF-8 Locale (Ubuntu 24.04+/26.04 compatible)
 RUN sed -i '/^# *en_US.UTF-8 UTF-8/s/^# *//' /etc/locale.gen \
     && locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8
-ENV LANG=en_US.UTF-8
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
 # Defining non-root User
 ARG USERNAME=coder
