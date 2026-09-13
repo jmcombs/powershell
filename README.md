@@ -37,8 +37,8 @@ This repository does automated weekly builds with the latest published LTS versi
 
 | Component         | Version |
 | ----------------- | ------- |
-| .NET Core Runtime | 10.0.11  |
-| PowerShell Core   | 7.4.19   |
+| .NET Core Runtime | 10.0.12  |
+| PowerShell Core   | 7.4.20   |
 
 ## How to Use
 
